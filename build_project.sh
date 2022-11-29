@@ -19,10 +19,6 @@ docker run --rm \
 
 ./vendor/bin/sail pull mysql
 ./vendor/bin/sail build
-./vendor/bin/sail npm install
-./vendor/bin/sail npm run build
-./vendor/bin/sail artisan migrate:fresh
-./vendor/bin/sail artisan db:seed
 
 CYAN='\033[0;36m'
 LIGHT_CYAN='\033[1;36m'
@@ -43,3 +39,7 @@ else
 fi
 
 ./vendor/bin/sail up -d
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run build
+./vendor/bin/sail artisan migrate:fresh
+./vendor/bin/sail artisan db:seed
