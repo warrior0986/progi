@@ -41,12 +41,8 @@ class HomeController extends Controller
         $minBasicFee =  $basicFee->min;
         $maxBasicFee =  $basicFee->max;
 
-        //dd($minBasicFee);
-
         $minAmount = $this->tryCalculation($budget, $fixedFees, $minAssociationFees, $minBasicFee);
         $maxAmount = $this->tryCalculation($budget, $fixedFees, $maxAssociationFees, $maxBasicFee);
-
-        //dd($minAmount, $maxAmount);
 
         $chosenBasicFee = ($minAmount < $minBasicFee) ? ($minBasicFee) : (($maxAmount > $maxBasicFee) ? $maxBasicFee : ($maxAmount*$basicFee->value));
 
@@ -73,44 +69,6 @@ class HomeController extends Controller
         if ($result['maxAmount'] < 0) {
             $result['maxAmount'] = 0;
         }
-
-        /*foreach ($fees as $fee) {
-             switch ($fee->type) {
-                case 'fixed':
-                    $result['fees'][$fee->name] = $fee->value;
-                    //$result['maxAmount'] = $result['maxAmount'] - $fee->value;
-                    break;
-                /*case 'percent':
-                    $feeToCharge = $result['maxAmount'] * ($fee->value/100);
-                    if ($fee->min) {
-                        $feeToCharge = $result['maxAmount'] < $fee->min ? $fee->min : $feeToCharge;
-                    }
-                    if ($fee->max) {
-                        $feeToCharge = $result['maxAmount'] > $fee->max ? $fee->max : $feeToCharge;
-                    }
-                    $result['fees'][$fee->name] = $feeToCharge;
-                    $result['maxAmount'] = $result['maxAmount'] - $feeToCharge;
-                    break;
-                case 'assoc':
-                case 'percent':
-                    $this->calculateFeeNew()
-                    /*if ($fee->max) {
-                        if ($result['maxAmount']>= $fee->min && $result['maxAmount']<= $fee->max) {
-                            $result['fees'][$fee->name] = $fee->value;
-                            $result['maxAmount'] = $result['maxAmount'] - $fee->value;
-                        }
-                    } else {
-                        if ($result['maxAmount']>= $fee->min) {
-                            $result['fees'][$fee->name] = $fee->value;
-                            $result['maxAmount'] = $result['maxAmount'] - $fee->value;
-                        }
-                    }
-                    break;
-                default:
-                    # code...
-                    break;
-             }
-        }*/
 
         return $result;
     }
