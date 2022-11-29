@@ -1,5 +1,5 @@
 <template>
-    <table class="tg">
+    <table class="table-auto tg">
     <thead>
     <tr>
         <th class="tg-73oq" rowspan="2">Budget</th>

@@ -40,37 +40,52 @@ export default {
 </script>
 
 <template>
-    <Head title="Progi Budget Calculation" />
-    <div class="block p-6 rounded-lg shadow-lg bg-white max-w-md">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            <form @submit.prevent="submit">
-                <div>
-                    <label for="budget">Budget</label>
-    
+    <Head title="Progi Bid Calculation" />
+    <div class=" bg-gray-100 min-h-screen ">
+        <div class="block p-10 rounded-lg shadow-2xl bg-white max-w-fit m-4">
+            <div class="">
+                <form @submit.prevent="submit">
+                    <label for="budget">Budget</label>        
                     <input
                         id="budget"
                         type="budget"
-                        class="mt-1 block w-full shadow"
+                        class="mt-1 block w-full shadow-lg hover:border-2xl"
                         v-model="budget.value"
                         required
                         autofocus
                         @keyup="calculate"
                     />
-                </div>
-    
-                <div class="flex items-center justify-end mt-4">
-                </div>
-            </form>
+                </form>
+            </div>
+            <br>
+            <Results :budget="budget"/>
+            <br>
+            <button
+                class="
+                    inline-flex
+                    items-center
+                    px-4 py-2
+                    bg-gray-800
+                    border border-transparent
+                    rounded-md
+                    font-semibold
+                    text-xs
+                    text-white uppercase
+                    tracking-widest
+                    hover:bg-gray-700
+                    focus:bg-gray-700
+                    active:bg-gray-900
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-indigo-500
+                    focus:ring-offset-2
+                    transition
+                    ease-in-out
+                    duration-150
+                "
+            >
+                <a :href="route('fee-configuration')">Fee Configuration</a>
+            </button>
         </div>
-        <div>
-            <Results :budget="budget">
-
-            </Results>
-        </div>
-        <button
-            class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
-        >
-            <a :href="route('fee-configuration')">Fee Configuration</a>
-        </button>
     </div>
 </template>

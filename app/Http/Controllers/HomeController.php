@@ -32,33 +32,75 @@ class HomeController extends Controller
 
     protected function calculateFees($budget, $result)
     {
-        $fees = Fee::all();
+        $budget = (double) $budget;
+        $fixedFees = (double) Fee::where('type', 'fixed')->sum('value');
+        $associatedFees = Fee::where('type', 'assoc')->get();
+        $maxAssociationFees = (double) Fee::where('type', 'assoc')->max('value');
+        $minAssociationFees = (double) Fee::where('type', 'assoc')->min('value');
+        $basicFee = Fee::where('name', 'basic')->first();
+        $minBasicFee =  $basicFee->min;
+        $maxBasicFee =  $basicFee->max;
 
-        foreach ($fees as $fee) {
+        //dd($minBasicFee);
+
+        $minAmount = $this->tryCalculation($budget, $fixedFees, $minAssociationFees, $minBasicFee);
+        $maxAmount = $this->tryCalculation($budget, $fixedFees, $maxAssociationFees, $maxBasicFee);
+
+        //dd($minAmount, $maxAmount);
+
+        $chosenBasicFee = ($minAmount < $minBasicFee) ? ($minBasicFee) : (($maxAmount > $maxBasicFee) ? $maxBasicFee : ($maxAmount*$basicFee->value));
+
+        foreach ($associatedFees as $fee) {
+            $minIsInRange = $this->isInRange($minAmount, $fee->min, $fee->max);
+            $maxIsInRange = $this->isInRange($maxAmount, $fee->min, $fee->max);
+
+            if ($minIsInRange || $maxIsInRange) {
+                $chosenAssociationFee = $fee->value;
+                break;
+            } else {
+                $chosenAssociationFee = $maxAssociationFees;
+            }
+        }
+
+        $specialFee = Fee::where('name', 'special')->first();
+        $chosenSpecialFee = ($budget - $fixedFees - $chosenBasicFee - $chosenAssociationFee)*($specialFee->value/100);
+
+        $result['fees']['basic'] = $chosenBasicFee > 0 ? round($chosenBasicFee, 2) : 0;
+        $result['fees']['association'] = $chosenAssociationFee > 0 ? round($chosenAssociationFee, 2) : 0;
+        $result['fees']['special'] = $chosenSpecialFee > 0 ? round($chosenSpecialFee,2) : 0;
+        $result['fees']['storage'] = $fixedFees > 0 ? round($fixedFees, 2) : 0;
+        $result['maxAmount'] = round($budget - $result['fees']['basic'] - $result['fees']['association'] - $result['fees']['special']  - $result['fees']['storage'], 2);
+        if ($result['maxAmount'] < 0) {
+            $result['maxAmount'] = 0;
+        }
+
+        /*foreach ($fees as $fee) {
              switch ($fee->type) {
                 case 'fixed':
                     $result['fees'][$fee->name] = $fee->value;
-                    $result['maxAmount'] = $result['maxAmount'] - $fee->value;
+                    //$result['maxAmount'] = $result['maxAmount'] - $fee->value;
                     break;
-                case 'percent':
-                    $feeToCharge = $budget * ($fee->value/100);
+                /*case 'percent':
+                    $feeToCharge = $result['maxAmount'] * ($fee->value/100);
                     if ($fee->min) {
-                        $feeToCharge = $feeToCharge < $fee->min ? $fee->min : $feeToCharge;
+                        $feeToCharge = $result['maxAmount'] < $fee->min ? $fee->min : $feeToCharge;
                     }
                     if ($fee->max) {
-                        $feeToCharge = $feeToCharge > $fee->max ? $fee->max : $feeToCharge;
+                        $feeToCharge = $result['maxAmount'] > $fee->max ? $fee->max : $feeToCharge;
                     }
                     $result['fees'][$fee->name] = $feeToCharge;
                     $result['maxAmount'] = $result['maxAmount'] - $feeToCharge;
                     break;
                 case 'assoc':
-                    if ($fee->max) {
-                        if ($budget>= $fee->min && $budget<= $fee->max) {
+                case 'percent':
+                    $this->calculateFeeNew()
+                    /*if ($fee->max) {
+                        if ($result['maxAmount']>= $fee->min && $result['maxAmount']<= $fee->max) {
                             $result['fees'][$fee->name] = $fee->value;
                             $result['maxAmount'] = $result['maxAmount'] - $fee->value;
                         }
                     } else {
-                        if ($budget>= $fee->min) {
+                        if ($result['maxAmount']>= $fee->min) {
                             $result['fees'][$fee->name] = $fee->value;
                             $result['maxAmount'] = $result['maxAmount'] - $fee->value;
                         }
@@ -68,8 +110,19 @@ class HomeController extends Controller
                     # code...
                     break;
              }
-        }
+        }*/
 
+        return $result;
+    }
+
+    protected function isInRange($amount, $min, $max)
+    {
+        return ($amount > $min) && ($amount < $max);
+    }
+
+    protected function tryCalculation($budget, $fixedFees, $associatedFees, $basicFees)
+    {
+        $result = ($budget - $fixedFees - $associatedFees - $basicFees)/1.02;
         return $result;
     }
 
